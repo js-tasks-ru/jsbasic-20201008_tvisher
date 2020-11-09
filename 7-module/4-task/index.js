@@ -137,6 +137,8 @@ export default class StepSlider {
         leftPercents = valuePercents;
         thumb.style.left = `${leftPercents}%`;
         progress.style.width = `${leftPercents}%`;
+        //удаляем класс slider_dragging
+        slider.classList.remove('slider_dragging');
 
         //вешаем пользовательское событие в момент отпуска ЛКМ
 
