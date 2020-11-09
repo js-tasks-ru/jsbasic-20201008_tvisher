@@ -45,7 +45,7 @@ export default class Carousel {
     this._elem.append(sliderBody);
 
   }
-  //метод для генерации пользовательского события 
+  //метод для генерации пользовательского события при нажатии на кнопку +
   onClick(event) {
     if (event.target.closest('.carousel__button')) {
       this._elem.dispatchEvent(
