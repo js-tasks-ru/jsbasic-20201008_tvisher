@@ -3,6 +3,7 @@ export default class StepSlider {
     return this._elem;
   }
   constructor(inputData) {
+    this.steps = inputData.steps;
     this.config = inputData;
     this.value = inputData.value;
     if (!this.value) {
@@ -11,7 +12,8 @@ export default class StepSlider {
     this._elem = document.createElement('div');
     this._elem.classList.add('slider');
     this.render(this.config);
-    this.onClick();
+    this.zeroPosition();
+    this.addEventListeners();
   }
 
   //верстаем слайдер по образу и подобию необходимого)
@@ -30,51 +32,47 @@ export default class StepSlider {
     }
   }
 
+  zeroPosition() {
+    this.textValue = this._elem.querySelector('.slider__value');
+    this.textValue.textContent = this.value;
+    let segments = this.steps - 1;
+    this.thumb = this._elem.querySelector('.slider__thumb');
+    this.progress = this._elem.querySelector('.slider__progress');
+    let valuePercents = this.value / segments * 100;
+    this.thumb.style.left = `${valuePercents}%`;
+    this.progress.style.width = `${valuePercents}%`;
+    this.spans = this._elem.querySelectorAll('.slider__steps > span');
+    this.spans[this.value].classList.add('slider__step-active');
+  }
 
-  onClick() {
-    let slider = this._elem;
-    let steps = this.config.steps;
-    let value = this.value;
-    let textValue = this._elem.querySelector('.slider__value');
-    textValue.textContent = value;
 
-    let segments = steps - 1;
-    let thumb = slider.querySelector('.slider__thumb');
-    let progress = slider.querySelector('.slider__progress');
-    let valuePercents = value / segments * 100;
-    let leftPercents = valuePercents;
-    thumb.style.left = `${leftPercents}%`;
-    progress.style.width = `${leftPercents}%`;
-    let spans = this._elem.querySelectorAll('.slider__steps > span');
-    spans[value].classList.add('slider__step-active');
 
-    function catchPosition(event) {
-      //переписываем свойстава ширины закрашенной области и положения кубика
-      let left = event.clientX - slider.getBoundingClientRect().left;
-      let leftRelative = left / slider.offsetWidth;
-      let approximateValue = leftRelative * segments;
-      value = Math.round(approximateValue);
-      textValue.textContent = value;
-      valuePercents = value / segments * 100;
-      leftPercents = valuePercents;
-      thumb.style.left = `${leftPercents}%`;
-      progress.style.width = `${leftPercents}%`;
-      //проверка на наличие класса
-      let activeSpan = document.querySelector('.slider__step-active');
-      if (activeSpan) {
-        activeSpan.classList.remove('slider__step-active');
-      }
-      spans[value].classList.add('slider__step-active');
-
-      //генерируем событие на слайдер
-      slider.dispatchEvent(
-        new CustomEvent('slider-change', {
-          detail: value,
-          bubbles: true
-        }));
+  onClick = (event) => {
+    //переписываем свойстава ширины закрашенной области и положения кубика
+    let left = event.clientX - this._elem.getBoundingClientRect().left;
+    let leftRelative = left / this._elem.offsetWidth;
+    let segments = this.steps - 1;
+    let approximateValue = leftRelative * segments;
+    this.value = Math.round(approximateValue);
+    this.textValue.textContent = this.value;
+    let valuePercents = this.value / segments * 100;
+    this.thumb.style.left = `${valuePercents}%`;
+    this.progress.style.width = `${valuePercents}%`;
+    //проверка на наличие класса
+    let activeSpan = document.querySelector('.slider__step-active');
+    if (activeSpan) {
+      activeSpan.classList.remove('slider__step-active');
     }
+    this.spans[this.value].classList.add('slider__step-active');
+    //генерируем событие на слайдер
+    this._elem.dispatchEvent(
+      new CustomEvent('slider-change', {
+        detail: this.value,
+        bubbles: true
+      }));
+  }
 
-    //наконец-то вешаем клик-прослушку на слайдер
-    this._elem.addEventListener('click', catchPosition);
+  addEventListeners() {
+    this._elem.addEventListener('click', this.onClick);
   }
 }

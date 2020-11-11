@@ -6,8 +6,7 @@ export default class Modal {
     this._elem = document.createElement('div');
     this._elem.classList.add('modal');
     this.render(this._elem);
-    this.open();
-    this.close();
+    this.addEventListeners();
   }
 
   open() {
@@ -41,25 +40,25 @@ export default class Modal {
   }
 
   close() {
-    let modalOpen = document.querySelector('.modal');
-    let modalDel = () => {
-      modalOpen.remove();
-      document.body.classList.remove('is-modal-open');
-    };
+    this._elem.remove();
+    document.body.classList.remove('is-modal-open');
+    document.removeEventListener('keydown', this.escClick);
+  }
 
-    if (modalOpen) {
-      modalDel();
+  onClick = (event) => {
+    if (event.target.closest('.modal__close')) {
+      this.close();
     }
+  }
 
-    function modalClose(event) {
-      if (event.target.closest('.modal__close') || event.code == 'Escape' && modalOpen) {
-        modalDel();
-      }
+  escClick = (event) => {
+    if (event.code == 'Escape') {
+      this.close();
     }
+  }
 
-    this._elem.addEventListener("click", modalClose);
-    document.addEventListener('keydown', modalClose, {
-      once: true
-    });
+  addEventListeners = () => {
+    this._elem.addEventListener("click", this.onClick);
+    document.addEventListener('keydown', this.escClick);
   }
 }

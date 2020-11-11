@@ -10,8 +10,7 @@ export default class RibbonMenu {
     this._elem.classList.add("ribbon");
     this.render(categories);
     this.ribbonInner = this._elem.querySelector('.ribbon__inner');
-    this._elem.addEventListener('click', (event) => this.scroller(event));
-    this._elem.addEventListener('click', (event) => this.getCategory(event));
+    this.addEventListeners();
   }
 
   render(dataIn) {
@@ -30,6 +29,14 @@ export default class RibbonMenu {
     nav.insertAdjacentHTML("afterend", rightArrow);
   }
 
+
+  addEventListeners() {
+    this._elem.addEventListener('click', (event) => this.scroller(event));
+    this._elem.addEventListener('click', (event) => this.getCategory(event));
+    this.ribbonInner.addEventListener('scroll', (event) => this.scroller(event));
+  }
+
+
   scroller(event) {
     let ribbonInner = this.ribbonInner;
     if (event.target.closest('.ribbon__arrow_right')) {
@@ -39,29 +46,26 @@ export default class RibbonMenu {
     if (event.target.closest('.ribbon__arrow_left')) {
       ribbonInner.scrollBy(-350, 0);
     }
-    //слушаем скролл на блоке со ссылками,скрываем и показыввем стрелки.
-    ribbonInner.addEventListener('scroll', () => {
-      let leftArrow = this._elem.querySelector('.ribbon__arrow_left');
-      let rightArrow = this._elem.querySelector('.ribbon__arrow_right');
 
-      let scrollWidth = ribbonInner.scrollWidth;
-      let scrollLeft = ribbonInner.scrollLeft;
-      let clientWidth = ribbonInner.clientWidth;
-      let scrollRight = scrollWidth - scrollLeft - clientWidth;
+    let leftArrow = this._elem.querySelector('.ribbon__arrow_left');
+    let rightArrow = this._elem.querySelector('.ribbon__arrow_right');
 
-      if (scrollLeft > 1) {
-        leftArrow.classList.add('ribbon__arrow_visible');
-      } else {
-        leftArrow.classList.remove('ribbon__arrow_visible');
-      }
+    let scrollWidth = ribbonInner.scrollWidth;
+    let scrollLeft = ribbonInner.scrollLeft;
+    let clientWidth = ribbonInner.clientWidth;
+    let scrollRight = scrollWidth - scrollLeft - clientWidth;
 
-      if (scrollRight < 1) {
-        rightArrow.classList.remove('ribbon__arrow_visible');
-      } else {
-        rightArrow.classList.add('ribbon__arrow_visible');
-      }
+    if (scrollLeft > 1) {
+      leftArrow.classList.add('ribbon__arrow_visible');
+    } else {
+      leftArrow.classList.remove('ribbon__arrow_visible');
+    }
 
-    });
+    if (scrollRight < 1) {
+      rightArrow.classList.remove('ribbon__arrow_visible');
+    } else {
+      rightArrow.classList.add('ribbon__arrow_visible');
+    }
   }
 
   getCategory(event) {
@@ -80,5 +84,4 @@ export default class RibbonMenu {
         }));
     }
   }
-
 }
