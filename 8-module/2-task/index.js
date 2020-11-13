@@ -10,13 +10,13 @@ export default class ProductGrid {
     this.filters = {};
     this._elem = document.createElement('div');
     this._elem.classList.add("products-grid");
+    this._elem.insertAdjacentHTML("beforeend", `<div class="products-grid__inner"></div>`);
     this.render(products);
     this.dataInCard(products);
   }
 
   render(dataIn) {
     //метод выполнящий отрисовку карточек товара
-    this._elem.insertAdjacentHTML("beforeend", `<div class="products-grid__inner"></div>`);
     let gridInnerContent = dataIn.map((item) => {
       return `<div class="card">
                 <div class = "card__top">
@@ -63,9 +63,9 @@ export default class ProductGrid {
       (!filMaxSpec || filMaxSpec >= item.spiciness) &&
       (!filNuts || filNuts && item.nuts !== true)
     );
-    //удаляем первоначальную отрисовку контейнера с карточками
-    this._elem.querySelector('.products-grid__inner').remove();
-    //рисуем новый контейнер с карточками под нужные параметры фильтрации 
+    //удаляем первоначальную отрисовку карточек
+    this._elem.querySelector('.products-grid__inner').innerHTML = '';
+    //рисуем новыe карточки под нужные параметры фильтрации 
     this.render(result);
   }
 }
