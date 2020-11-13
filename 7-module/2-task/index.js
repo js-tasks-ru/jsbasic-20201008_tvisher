@@ -12,6 +12,7 @@ export default class Modal {
   open() {
     document.body.append(this._elem);
     document.body.classList.add('is-modal-open');
+    document.addEventListener('keydown', this.escClick);
   }
 
   render(modal) {
@@ -59,6 +60,5 @@ export default class Modal {
 
   addEventListeners = () => {
     this._elem.addEventListener("click", this.onClick);
-    document.addEventListener('keydown', this.escClick);
   }
 }
