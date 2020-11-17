@@ -8,6 +8,7 @@ export default class Cart {
 
   constructor(cartIcon) {
     this.cartIcon = cartIcon;
+    this.modal = new Modal();
     this.addEventListeners();
   }
   //метод добавления товара в корзину
@@ -51,11 +52,7 @@ export default class Cart {
   }
 
   isEmpty() {
-    if (!this.cartItems.length) {
-      return true;
-    } else {
-      return false;
-    }
+    return !this.cartItems.length;
   }
 
   getTotalCount() {
@@ -122,67 +119,40 @@ export default class Cart {
       </div>
     </form>`);
   }
-  //отрисовка нужного заголовка модалки
-  setTitle(newTitle) {
-    let modalTitle = this.modal.querySelector('.modal__title');
-    modalTitle.innerHTML = newTitle;
-  }
-  //отрисовка тела модалки
-  setBody(node) {
-    this.modalBodyDiv = this.modal.querySelector('.modal__body > div');
-    this.modalBodyDiv.prepend(node);
-  }
-
 
   renderModalBody() {
+    let modalBodyDiv = document.createElement('div');
+    this._elem = modalBodyDiv;
+    //создаём div в который будем рисовать тело модалки
     //добавляем в мадальное окно форму
-    this.setBody(this.renderOrderForm());
+    modalBodyDiv.prepend(this.renderOrderForm());
     /*проходим циклом по корзине и вставляем в модалку все товары из корзины +
      добавляем все параметры товаров + прописываем актуальную итоговую стоимось каждого товара учитывая колличество */
     for (let i = 0; i < this.cartItems.length; i++) {
       //рисуем карточки
-      this.setBody(this.renderProduct(this.cartItems[i].product, this.cartItems[i].count));
+      modalBodyDiv.prepend(this.renderProduct(this.cartItems[i].product, this.cartItems[i].count));
       //добавляем параметры
-      Object.assign(this.modal.querySelector('.cart-product'), this.cartItems[i]);
+      Object.assign(modalBodyDiv.querySelector('.cart-product'), this.cartItems[i]);
       //прописываем актуальную итоговую стоимось каждого товара учитывая колличество
-      this.modal.querySelector('.cart-product__price').innerHTML = `€${(this.cartItems[i].product.price * this.cartItems[i].count).toFixed(2)}`;
+      modalBodyDiv.querySelector('.cart-product__price').innerHTML = `€${(this.cartItems[i].product.price * this.cartItems[i].count).toFixed(2)}`;
     }
+    this.modal.setBody(modalBodyDiv);
   }
 
   renderModal() {
     //создаём и отрисовываем модалку
-    this.modal = document.createElement('div');
-    this.modal.classList.add('modal');
-    this.modal.insertAdjacentHTML("afterbegin", `<div class="modal__overlay"></div>
-    <div class="modal__inner">
-      <div class="modal__header">
-        <button type="button" class="modal__close">
-          <img src="/assets/images/icons/cross-icon.svg" alt="close-icon" />
-        </button>
-        <h3 class="modal__title">
-        </h3>
-      </div>
-      <div class="modal__body"><div></div></div>
-    </div>`);
-
-    //присваем заголовок мадальному окну
-    this.setTitle("Your order");
-    //рисуем тело модалки
     this.renderModalBody();
-    //добавляем модалку на страницу + присваем класс к body
-    document.body.append(this.modal);
-    document.body.classList.add('is-modal-open');
-    //добавляем событие прослушки нажатия ESC
-    document.addEventListener('keydown', this.escClick);
-    //вешаем на модалку прослушку клика для изменения колличества товаров в корзине
-    this.modal.addEventListener('click', this.calcProducts);
+    this.modal.setTitle("Your order");
+    this.modal.open();
+    //вешаем прослушку события клика для калькуляции стоимости и количества товаров
+    this._elem.addEventListener('click', this.calcProducts);
     //вешаем прослушку события submit на форму 
-    this.modal.querySelector('.cart-form').addEventListener('submit', this.onSubmit);
+    this._elem.querySelector('.cart-form').addEventListener('submit', this.onSubmit);
   }
 
   calcProducts = (event) => {
     //проверяем открыта ли модалка и то куда cсовершается нажатие
-    if (!this.modal || !event.target.closest('.cart-product')) {
+    if (!this._elem || !event.target.closest('.cart-product')) {
       return false;
     }
     //карточка на которой было событие
@@ -209,7 +179,7 @@ export default class Cart {
     this.updateProductCount(cardId, selectedCard.count);
     //если товаров в корзине нет, закрываем модалку
     if (this.isEmpty()) {
-      this.close();
+      this.modal.close();
     }
   }
 
@@ -217,7 +187,7 @@ export default class Cart {
     //проверяем что модалка открыта
     if (document.body.classList.contains('is-modal-open')) {
       //находим все товары в корзине модалки
-      let cardProducts = this.modal.querySelectorAll('.cart-product');
+      let cardProducts = this._elem.querySelectorAll('.cart-product');
       //проходим по товарам цклом и рисуем новые параметры
       for (let i = 0; i < cardProducts.length; i++) {
         cardProduct = cardProducts[i];
@@ -226,7 +196,7 @@ export default class Cart {
         //ищем количество товаров на этой карточке
         let cardCount = cardProduct.querySelector('.cart-counter__count');
         //ищем общую стоимость товаров в модально окне
-        let totalPeice = this.modalBodyDiv.querySelector('.cart-buttons__info-price');
+        let totalPeice = this._elem.querySelector('.cart-buttons__info-price');
         //обновляем вёрстку в модалке БЕЗ ПОВТОРНОЙ ОТРИСОВКИ ВСЕЙ МОДАЛКИ =)
         cardPrice.innerHTML = `€${(cardProduct.product.price * cardProduct.count).toFixed(2)}`;
         cardCount.innerHTML = `${cardProduct.count}`;
@@ -241,7 +211,7 @@ export default class Cart {
     //отключаем событие по умолчанию
     event.preventDefault();
     //находим форму
-    let modalForm = this.modal.querySelector('.cart-form');
+    let modalForm = this._elem.querySelector('.cart-form');
     //присваеиваем кнопке нужный класс
     modalForm.querySelector('.cart-buttons__button').classList.add('is-loading');
     //создаём обьект формы для сервера
@@ -255,7 +225,7 @@ export default class Cart {
     });
     //получаем промис от сервера и перерисовываем тело и заголовок модалки + обнуляем корзину
     promise.then(() => {
-      this.modalBodyDiv.innerHTML = `<div class="modal__body-inner">
+      this._elem.innerHTML = `<div class="modal__body-inner">
       <p>
         Order successful! Your order is being cooked :) <br>
         We’ll notify you about delivery time shortly.<br>
@@ -263,7 +233,7 @@ export default class Cart {
       </p>
     </div>`;
       //меняем заголовок модалки
-      this.setTitle('Success!');
+      this.modal.setTitle('Success!');
       //обнуляем корзину 
       this.cartItems = [];
       //обнуляем внешний вид корзины 
@@ -273,27 +243,9 @@ export default class Cart {
     });
 
   }
-  //удаляем модалку, класс и прослушку на событие keydown
-  close() {
-    this.modal.remove();
-    document.body.classList.remove('is-modal-open');
-    document.removeEventListener('keydown', this.escClick);
-  }
-  //проверка на действие пользователя
-  onClick = (event) => {
-    if (event.target.closest('.modal__close')) {
-      this.close();
-    }
-  }
-  //проверка на действие пользователя
-  escClick = (event) => {
-    if (event.code == 'Escape') {
-      this.close();
-    }
-  }
   //прослушка элементов страницы
   addEventListeners() {
     this.cartIcon.elem.onclick = () => this.renderModal();
-    document.addEventListener("click", this.onClick);
+    document.addEventListener("click", this.modal.onClick);
   }
 }
