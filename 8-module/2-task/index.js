@@ -19,7 +19,7 @@ export default class ProductGrid {
     //метод выполнящий отрисовку карточек товара
     for (let i = 0; i < dataIn.length; i++) {
       let gridInnerContent = new ProductCard(dataIn[i]).elem;
-      Object.assign(gridInnerContent, dataIn[i]);
+      // Object.assign(gridInnerContent, dataIn[i]);
       this._elem.querySelector('.products-grid__inner').append(gridInnerContent);
     }
 
@@ -55,7 +55,7 @@ export default class ProductGrid {
     let result = this.products.filter((item) =>
       (!filNuts || item.nuts !== true) &&
       (!filVeg || item.vegeterian == true) &&
-      (!filMaxSpec || item.spiciness <= filMaxSpec) &&
+      (filMaxSpec == undefined || item.spiciness <= filMaxSpec) &&
       (!filCat || filCat == '' || item.category == filCat)
     );
     this._elem.querySelector('.products-grid__inner').innerHTML = "";
