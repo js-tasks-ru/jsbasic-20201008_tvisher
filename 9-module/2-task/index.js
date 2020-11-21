@@ -54,13 +54,15 @@ export default class Main {
   }
 
   addEventListeners() {
-    document.addEventListener('product-add', (event) => {
+    document.body.addEventListener('product-add', (event) => {
       let selectedProductId = event.detail;
       let findResult = this.productsArray.find((item) =>
         (item.id == selectedProductId)
       );
+      if (!findResult) {
+        return;
+      }
       this.cart.addProduct(findResult);
-      console.log(event);
     });
 
 
